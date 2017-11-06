@@ -17,7 +17,7 @@ def handle(connection, addr):
             logger.debug('Received data %r' % data)
             #connection.sendall(data.encode())
             connection.send(data.encode())
-            logger.debug('Sent data')
+            logger.debug('Sent data %r' % data)
     except:
         logger.exception('Problem handling request')
     finally:
@@ -44,6 +44,7 @@ class Server(object):
             process.daemon = True
             process.start()
 
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
     server = Server('0.0.0.0', 8080)
@@ -59,6 +60,7 @@ if __name__ == '__main__':
             process.terminate()
             process.join()
     logging.info('all done')
+
 
 '''
 _IP = '0.0.0.0'
