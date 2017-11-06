@@ -1,6 +1,7 @@
 import io
 import socket
 
+'''
 _SERVER_IP = '127.0.0.1'
 _PORT = 8080
 
@@ -30,3 +31,19 @@ while True:
 
 print('[MSG] Closing client socket ...')
 client_socket.close()
+'''
+
+if __name__ == '__main__':
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(('localhost', 8080))
+    while True:
+        cmd = input('[INP] command: ')
+        #sock.sendall(cmd.encode())
+        sock.send(cmd.encode())
+
+        result = sock.recv(1024).decode()
+        print(result)
+        if result == 'quit':
+            break
+
+    sock.close()
