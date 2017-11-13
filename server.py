@@ -1,8 +1,37 @@
-import os
-import io
 import socket
 import logging
+import subprocess
 import multiprocessing
+
+from multiprocessing import Process
+
+
+_SERVER_PATH = '/home/punk/study-hard'
+_PASS_CODE = 'testestest'
+_IS_ALIVE = False
+
+
+def docker_start():
+    subprocess.run(['docker-compose', 'up', '-d'])
+
+
+def docker_down():
+    subprocess.run(['docker-compose', 'down'])
+
+
+def start_web_server():
+    proc = Process(target=docker_start)
+    _IS_ALIVE = True
+
+
+def stop_web_server():
+    proc = Process(target=docker_start)
+    _IS_ALIVE = False
+
+
+def is_alive_docker():
+    return _IS_ALIVE
+
 
 def handle(connection, addr):
     logging.basicConfig(level=logging.DEBUG)
@@ -15,7 +44,7 @@ def handle(connection, addr):
                 logger.debug('socket closed remotely')
                 break
             logger.debug('Received data %r' % data)
-            #connection.sendall(data.encode())
+            # connection.sendall(data.encode())
             connection.send(data.encode())
             logger.debug('Sent data %r' % data)
     except:
@@ -60,49 +89,3 @@ if __name__ == '__main__':
             process.terminate()
             process.join()
     logging.info('all done')
-
-
-'''
-_IP = '0.0.0.0'
-#_IP = '127.0.0.1'
-_PORT = 8080
-
-_BUFSIZ = 64
-#_BUFSIZ = io.DEFAULT_BUFFER_SIZE
-
-#_PASSCODE = os.environ['PASSCODE']
-_PASSCODE = 'test'
-
-print('[MSG] Creating server socket ...')
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-server_socket.bind((_IP, _PORT))
-server_socket.listen(1)
-print('[MSG] Server socket is created')
-
-connection, addr = server_socket.accept()
-print('[MSG] Client Connection - %s' % str(addr[0]))
-
-pass_code = connection.recv(_BUFSIZ).decode()
-if _PASSCODE != pass_code:
-    print('[ERR] PASSCODE from client does not match')
-    connection.send('False'.encode())
-    exit(1)
-
-connection.send('True'.encode())
-print('[MSG] Client authentication completed')
-
-while True:
-    cmd = connection.recv(_BUFSIZ).decode()
-
-    print('[CMD] %s' % cmd)
-    connection.send(cmd.encode())    # Temporary code line
-
-    if cmd == 'quit':
-        connection.close()
-        break
-
-print('[MSG] Closing server socket ...')
-server_socket.shutdown(1)
-server_socket.close()
-'''
