@@ -30,9 +30,9 @@ if __name__ == '__main__':
         print('5. quit: quit program')
         print('========================================')
         cmd = input('command > ')
+        print()
 
         if cmd == 'start' or cmd == 'stop':
-            print()
             print('[MSG]Loading..')
 
         #sock.sendall(cmd.encode())
@@ -40,7 +40,6 @@ if __name__ == '__main__':
 
         result = sock.recv(1024).decode()
 
-        print()
         if cmd == 'log' and result != 'Cannot get server log':
             ok_msg = 'ready'
             sock.send(ok_msg.encode())
