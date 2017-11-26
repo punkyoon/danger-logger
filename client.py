@@ -41,7 +41,7 @@ if __name__ == '__main__':
         result = sock.recv(1024).decode()
 
         print()
-        if cmd == 'log':
+        if cmd == 'log' and result != 'Cannot get server log':
             ok_msg = 'ready'
             sock.send(ok_msg.encode())
             data_size = int(result)
