@@ -1,5 +1,6 @@
 import socket
 import hashlib
+import getpass
 
 
 if __name__ == '__main__':
@@ -8,7 +9,8 @@ if __name__ == '__main__':
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(('localhost', 8080))
 
-    cmd = input('[AUTH] passcode: ')
+    #cmd = input('[AUTH] passcode: ')
+    cmd = getpass.getpass('[AUTH] passcode: ')
     pass_hash = hashlib.sha256(cmd.encode()).hexdigest()
     sock.send(pass_hash.encode())
 
@@ -45,7 +47,7 @@ if __name__ == '__main__':
             data_size = int(result)
             result = sock.recv(data_size).decode()
             with open('logs.txt', 'w') as f:
-                f.write(result)    
+                f.write(result)
             print('[MSG]Saved logs.txt')
         else:
             print(result)

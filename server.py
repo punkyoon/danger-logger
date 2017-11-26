@@ -1,4 +1,5 @@
 import os
+import docker
 import socket
 import hashlib
 import logging
@@ -13,20 +14,15 @@ _SERVER_PATH = os.path.join(
     'docker-compose.yaml'
 )
 _PASS_CODE = 'test'
-_IS_ALIVE = False
 
 
 def docker_start():
     global _SERVER_PATH
-    global _IS_ALIVE
-    _IS_ALIVE = True
     subprocess.run(['sudo', 'docker-compose', '-f', _SERVER_PATH, 'up', '-d'])
 
 
 def docker_down():
     global _SERVER_PATH
-    global _IS_ALIVE
-    _IS_ALIVE = False
     subprocess.run(['sudo', 'docker-compose', '-f', _SERVER_PATH, 'down'])
 
 
@@ -47,7 +43,29 @@ def get_log():
 
 
 def is_docker_alive():
-    global _IS_ALIVE
+    _IS_ALIVE = False
+
+    container_name_list = [
+        'studyhard_nginx_1',
+        'studyhard_worker_1',
+        'studyhard_daphne_1',
+        'studyhard_redis_1',
+        'studyhard_postgres_1'
+    ]
+
+    docker_client = docker.from_env()
+    container_list = docker_client.containers.list(
+        filters={'status': 'running'}
+    )
+
+    if len(container_list) != 0:
+        count = 0
+        for container in container_list:
+            if container.name in container_name_list:
+                count += 1
+        if count == len(container_name_list):
+            _IS_ALIVE = True
+
     return _IS_ALIVE
 
 
