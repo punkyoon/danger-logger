@@ -12,22 +12,29 @@ _SERVER_PATH = os.path.join(
     '/home/punk/study-hard',
     'docker-compose.yaml'
 )
-_PASS_CODE = 'testtesttest'
+_PASS_CODE = 'test'
 _IS_ALIVE = False
 
 
 def docker_start():
-    subprocess.run(['docker-compose', '-f', _SERVER_PATH, 'up', '-d'])
+    global _SERVER_PATH
+    global _IS_ALIVE
+    _IS_ALIVE = True
+    subprocess.run(['sudo', 'docker-compose', '-f', _SERVER_PATH, 'up', '-d'])
 
 
 def docker_down():
-    subprocess.run(['docker-compose', '-f', _SERVER_PATH, 'down'])
+    global _SERVER_PATH
+    global _IS_ALIVE
+    _IS_ALIVE = False
+    subprocess.run(['sudo', 'docker-compose', '-f', _SERVER_PATH, 'down'])
 
 
 def get_log():
+    global _SERVER_PATH
     if is_docker_alive():
         output_result = subprocess.check_output([
-            'docker-compose', '-f',
+            'sudo', 'docker-compose', '-f',
             _SERVER_PATH, 'logs', '--no-color'
         ])
 
@@ -37,18 +44,6 @@ def get_log():
         return True
     else:
         return False
-
-
-def start_web_server():
-    global _IS_ALIVE
-    _IS_ALIVE = True
-    Process(target=docker_start)
-
-
-def stop_web_server():
-    global _IS_ALIVE
-    _IS_ALIVE = True
-    Process(target=docker_start)
 
 
 def is_docker_alive():
@@ -91,21 +86,33 @@ def handle(connection, addr):
 
             msg = ''
             if data == 'start':
-                if is_docker_alive():
+                if not is_docker_alive():
                     msg = 'Web server on docker is started'
-                    start_web_server()
+                    docker_start()
                 else:
                     msg = 'Web server is already running on docker'
 
             elif data == 'stop':
                 if is_docker_alive():
                     msg = 'We server on docker is stopped'
-                    stop_web_server()
+                    docker_down()
                 else:
                     msg = 'Web server on docker is not running'
 
             elif data == 'status':
                 msg = 'Web server on docker status: %s' % (is_docker_alive(),)
+
+            elif data == 'log':
+                if get_log():
+                    with open('logs.txt', 'r') as f:
+                        log_data = f.readlines()
+                    for line in log_data:
+                        msg += line
+                    data_size = str(len(msg))
+                    connection.send(data_size.encode())
+                    connection.recv(1024).decode()
+                else:
+                    msg = 'Cannot get server log'
 
             elif data == 'quit':
                 msg = 'quit'
