@@ -3,17 +3,20 @@ import hashlib
 import getpass
 
 
+# Main cod
 if __name__ == '__main__':
     _IS_PASSED = False
 
+    # Creating socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(('localhost', 8080))
+    sock.connect(('localhost', 8080))    # Server IP and port
 
-    #cmd = input('[AUTH] passcode: ')
+    # Authenticate user
     cmd = getpass.getpass('[AUTH] passcode: ')
     pass_hash = hashlib.sha256(cmd.encode()).hexdigest()
     sock.send(pass_hash.encode())
 
+    # Check passcode
     is_passed = sock.recv(1024).decode()
     if is_passed == 'False':
         print('[MSG]Invalid passcode')
@@ -22,6 +25,7 @@ if __name__ == '__main__':
 
     print('[MSG]Valid passcode')
     while True:
+        # Service list menu
         print('=================LOGGER=================')
         print('1. start: server start')
         print('2. stop: server stop')
@@ -35,7 +39,7 @@ if __name__ == '__main__':
         if cmd == 'start' or cmd == 'stop':
             print('[MSG]Loading..')
 
-        #sock.sendall(cmd.encode())
+        # Sending command
         sock.send(cmd.encode())
 
         result = sock.recv(1024).decode()
@@ -52,6 +56,7 @@ if __name__ == '__main__':
             print(result)
         print()
 
+        # Shutdown service
         if result == 'quit':
             print('[MSG]Shutdown..')
             break

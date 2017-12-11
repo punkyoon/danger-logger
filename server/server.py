@@ -6,26 +6,29 @@ import logging
 import subprocess
 import multiprocessing
 
-from multiprocessing import Process
 
-
+# docker-compose path for managing docker container
 _SERVER_PATH = os.path.join(
     '/home/punk/study-hard',
     'docker-compose.yaml'
 )
-_PASS_CODE = 'test'
+#_PASS_CODE = 'test'
+_PASS_CODE = os.environ.get('PASS_CODE')
 
 
+# Start Docker server
 def docker_start():
     global _SERVER_PATH
     subprocess.run(['sudo', 'docker-compose', '-f', _SERVER_PATH, 'up', '-d'])
 
 
+# Stop docker server
 def docker_down():
     global _SERVER_PATH
     subprocess.run(['sudo', 'docker-compose', '-f', _SERVER_PATH, 'down'])
 
 
+# Get docker server log
 def get_log():
     global _SERVER_PATH
     if is_docker_alive():
@@ -34,17 +37,20 @@ def get_log():
             _SERVER_PATH, 'logs', '--no-color'
         ])
 
+        # Saveing logs
         with open('logs.txt', 'wb') as f:
             f.write(output_result)
-
         return True
+
     else:
         return False
 
 
+# Check that docker server is running
 def is_docker_alive():
     _IS_ALIVE = False
 
+    # Container list you want to manage
     container_name_list = [
         'studyhard_nginx_1',
         'studyhard_worker_1',
@@ -69,6 +75,7 @@ def is_docker_alive():
     return _IS_ALIVE
 
 
+# Verify the passcode
 def check_passcode(hash_value):
     global _PASS_CODE
     origin_value = hashlib.sha256(_PASS_CODE.encode()).hexdigest()
@@ -78,10 +85,13 @@ def check_passcode(hash_value):
         return False
 
 
+# Handle the service with client's command
 def handle(connection, addr):
+    # Using logger
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger('process-%r' % (addr,))
 
+    # Get client passcode and verify it
     pass_code = connection.recv(1024).decode()
     if not check_passcode(pass_code):
         connection.send('False'.encode())
@@ -93,6 +103,7 @@ def handle(connection, addr):
     connection.send(msg.encode())
     logger.debug(msg)
 
+    # Handling command
     try:
         logger.debug('Connected %r at %r' % (connection, addr))
         while True:
@@ -120,6 +131,7 @@ def handle(connection, addr):
             elif data == 'status':
                 msg = 'Web server on docker status: %s' % (is_docker_alive(),)
 
+            # Send log file
             elif data == 'log':
                 if get_log():
                     with open('logs.txt', 'r') as f:
@@ -138,7 +150,6 @@ def handle(connection, addr):
             else:
                 msg = 'Invalid command'
 
-            # connection.sendall(data.encode())
             connection.send(msg.encode())
             if data == 'log':
                 msg = 'Send log data'
@@ -151,6 +162,7 @@ def handle(connection, addr):
         connection.close()
 
 
+# Multiprocessing Server class
 class Server(object):
     def __init__(self, hostname, port):
         self.logger = logging.getLogger('server')
@@ -159,6 +171,8 @@ class Server(object):
 
     def start(self):
         self.logger.debug('listening')
+
+        # Creating socket
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((self.hostname, self.port))
         self.socket.listen(1)
@@ -171,12 +185,14 @@ class Server(object):
             process.start()
 
 
+# Main code
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
-    server = Server('0.0.0.0', 8080)
+    server = Server('0.0.0.0', 8080)    # Initializing server info(IP and port)
+
     try:
         logging.info('Listening')
-        server.start()
+        server.start()    # Starting server
     except:
         logging.exception('Unexpected exception')
     finally:
