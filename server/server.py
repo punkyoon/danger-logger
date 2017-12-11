@@ -139,8 +139,10 @@ def handle(connection, addr):
                 msg = 'Invalid command'
 
             # connection.sendall(data.encode())
-            logger.debug(msg)
             connection.send(msg.encode())
+            if data == 'log':
+                msg = 'Send log data'
+            logger.debug(msg)
             logger.debug('Sent data %r' % msg)
     except:
         logger.exception('Problem handling request')
