@@ -26,13 +26,13 @@ if __name__ == '__main__':
     print('[MSG]Valid passcode')
     while True:
         # Service list menu
-        print('=================LOGGER=================')
+        print('=================MANAGER=================')
         print('1. start: server start')
         print('2. stop: server stop')
         print('3. status: check server status')
         print('4. log: get server log file')
         print('5. quit: quit program')
-        print('========================================')
+        print('=========================================')
         cmd = input('command > ')
         print()
 
